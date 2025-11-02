@@ -1,59 +1,102 @@
-<!doctype html>
-<html lang="ka">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>კომპიუტერული სერვისი </title> 
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;background:#f6f7fb;color:#111;margin:0;padding:20px}
-    .wrap{max-width:760px;margin:0 auto}
-    header{background:#1e66ff;color:#fff;padding:18px;border-radius:8px}
-    h1{margin:0;font-size:20px}
-    p{margin:10px 0}
-    .card{background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,0.06);margin-top:14px}
-    a{color:#1e66ff}
-    footer{margin-top:18px;color:#666;font-size:13px}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <h1>კომპიუტერული სერვისი </h1>
-      <p>კომპიუტერების რემონტი • Windows ინსტალაცია • ტექნიკური მხარდაჭერა</p>
-    </header>
+<!-- OS Logos + Lightbox (ჩასვით თქვენს index.html-ში) -->
+<style>
+  .os-logos{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .os-logos img{cursor:pointer;width:96px;height:auto;padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.04);box-shadow:0 4px 10px rgba(0,0,0,0.04);transition:transform .12s}
+  .os-logos img:hover{transform:translateY(-4px)}
+  /* Lightbox modal */
+  .lb-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:1200;padding:20px}
+  .lb-backdrop.open{display:flex}
+  .lb-content{max-width:100%;max-height:100%;display:flex;gap:12px;align-items:center}
+  .lb-content img{max-width:92vw;max-height:82vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+  .lb-close{position:absolute;top:18px;right:20px;color:#fff;font-size:20px;background:transparent;border:0;cursor:pointer}
+  /* optional prev/next */
+  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:28px;background:transparent;border:0;cursor:pointer;padding:12px}
+  .lb-prev{left:10px} .lb-next{right:10px}
+</style>
 
-    <div class="card">
-
-<div class="os-logos">
-  <img src="images/windows7.svg" alt="Windows 7" width="72" height="40">
-  <img src="images/windows8.1.svg" alt="Windows 8.1" width="72" height="40">
-  <img src="images/windows10.svg" alt="Windows 10" width="72" height="40">
-  <img src="images/windows11.svg" alt="Windows 11" width="72" height="40">
+<div class="os-logos" id="osLogos">
+  <img src="images/windows11.svg" alt="Windows 11" data-index="0">
+  <img src="images/windows10.svg" alt="Windows 10" data-index="1">
+  <img src="images/windows8.1.svg" alt="Windows 8.1" data-index="2">
+  <img src="images/windows7.svg" alt="Windows 7" data-index="3">
 </div>
 
-
-
-      
-      <h2>WINDOWS-7 WINDOWS-8.1 WINDOWS-10 WINDOWS-11 </h2>
-      <ul>
-        <li>კომპიუტერების შეკეთება, გაწმენდა მტვრისგან ხარისხიანი თერმოპასტის გამოყენებით და დიაგნოსტიკა</li>
-        <li>Windows-ის ინსტალაცია და კონფიგურაცია   საჭირო დრაივერებით და პროგრამებით 
-                   </li>
-        <li> ინტერნეტის სხვადასხვა პრობლემების მოგვარება კაბელების გაჭიმვა დაზიანეებების შემოწმება და ვაიფაის დაყენება               </li>
-          <li>   კონსულტაციები სხვადასხვა კომპიუტერულ საკითხებში             </li>
-          <li>                </li>
-       
-      </ul>
-      <p>
-        <!-- შეცვალე აქ ტელეფონი და ელ.ფოსტა საკუთარი ინფორმაციით -->
-        ტელ: <strong><a href="tel:+9955598556199">+995-579-20-35-75 </a></strong><br>
-        ტელ: <strong><a href="tel:+9955598556199">+995-598-556-199 </a></strong><br>
-      </p>
-
-     
-    </div>
-
-    
+<!-- Lightbox markup -->
+<div class="lb-backdrop" id="lbBackdrop" aria-hidden="true">
+  <button class="lb-close" id="lbClose" aria-label="Close">&times;</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">&#10094;</button>
+  <div class="lb-content" id="lbContent">
+    <img src="" alt="" id="lbImage">
   </div>
-</body>
-</html>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next">&#10095;</button>
+</div>
+
+<script>
+  (function(){
+    const logos = Array.from(document.querySelectorAll('#osLogos img'));
+    const backdrop = document.getElementById('lbBackdrop');
+    const lbImage = document.getElementById('lbImage');
+    const closeBtn = document.getElementById('lbClose');
+    const prevBtn = document.getElementById('lbPrev');
+    const nextBtn = document.getElementById('lbNext');
+
+    let current = -1;
+
+    function openAt(index){
+      const img = logos[index];
+      if(!img) return;
+      current = index;
+      lbImage.src = img.src;
+      lbImage.alt = img.alt || '';
+      backdrop.classList.add('open');
+      backdrop.setAttribute('aria-hidden','false');
+      // focus for accessibility
+      closeBtn.focus();
+    }
+
+    function closeLB(){
+      backdrop.classList.remove('open');
+      backdrop.setAttribute('aria-hidden','true');
+      lbImage.src = '';
+      current = -1;
+    }
+
+    function showPrev(){
+      if(current < 0) return;
+      const nextIndex = (current - 1 + logos.length) % logos.length;
+      openAt(nextIndex);
+    }
+
+    function showNext(){
+      if(current < 0) return;
+      const nextIndex = (current + 1) % logos.length;
+      openAt(nextIndex);
+    }
+
+    // click logos
+    logos.forEach((img, i) => {
+      img.addEventListener('click', () => openAt(i));
+    });
+
+    // backdrop click closes when clicking outside image
+    backdrop.addEventListener('click', (ev) => {
+      if(ev.target === backdrop) closeLB();
+    });
+
+    closeBtn.addEventListener('click', closeLB);
+    prevBtn.addEventListener('click', (e)=>{ e.stopPropagation(); showPrev(); });
+    nextBtn.addEventListener('click', (e)=>{ e.stopPropagation(); showNext(); });
+
+    // keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if(backdrop.classList.contains('open')){
+        if(e.key === 'Escape') closeLB();
+        if(e.key === 'ArrowLeft') showPrev();
+        if(e.key === 'ArrowRight') showNext();
+      }
+    });
+
+    // Optional: ensure only one modal instance (already true) and clicking new image replaces opened one
+    // (openAt just replaces lbImage.src so previous is closed automatically)
+  })();
+</script>
